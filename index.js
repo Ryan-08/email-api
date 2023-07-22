@@ -1,8 +1,12 @@
 const express = require("express");
 const nodemailer = require("nodemailer");
+const cors = require("cors");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Use the cors middleware
+app.use(cors());
 
 // Middleware to parse JSON data
 app.use(express.json());
@@ -15,14 +19,14 @@ app.post("/send-email", (req, res) => {
   const transporter = nodemailer.createTransport({
     service: "Gmail",
     auth: {
-      user: "your-email@gmail.com", // Replace with your Gmail email address
-      pass: "your-password", // Replace with your Gmail password
+      user: process.env.EMAIL, // Replace with your Gmail email address
+      pass: process.env.EMAIL, // Replace with your Gmail password
     },
   });
 
   const mailOptions = {
-    from: "your-email@gmail.com", // Replace with your Gmail email address
-    to: "recipient@example.com", // Replace with the recipient's email address
+    from: process.env.EMAIL, // Replace with your Gmail email address
+    to: process.env.RECIPIENT, // Replace with the recipient's email address
     subject: "New Message from Contact Form",
     text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
   };
@@ -39,6 +43,10 @@ app.post("/send-email", (req, res) => {
       res.json({ success: true, message: "Email sent successfully!" });
     }
   });
+});
+
+app.get("/hello", (req, res) => {
+  res.send("Hello, World!");
 });
 
 // Start the server
