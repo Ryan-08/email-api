@@ -1,18 +1,19 @@
+"use strict";
 const express = require("express");
-const nodemailer = require("nodemailer");
-const cors = require("cors");
-
+const path = require("path");
+const serverless = require("serverless-http");
 const app = express();
-const PORT = process.env.PORT || 3000;
+const bodyParser = require("body-parser");
 
-// Use the cors middleware
-app.use(cors());
-
-// Middleware to parse JSON data
-app.use(express.json());
-
-// Route to handle email sending
-app.post("/send-email", (req, res) => {
+const router = express.Router();
+router.get("/", (req, res) => {
+  res.writeHead(200, { "Content-Type": "text/html" });
+  res.write("<h1>Hello from Express.js!</h1>");
+  res.end();
+});
+router.get("/another", (req, res) => res.json({ route: req.originalUrl }));
+router.post("/", (req, res) => res.json({ postBody: req.body }));
+router.post("/send-email", (req, res) => {
   const { name, email, message } = req.body;
 
   // Replace these values with your own email account configuration
@@ -44,15 +45,13 @@ app.post("/send-email", (req, res) => {
     }
   });
 });
-
-app.get("/hello", (req, res) => {
+router.get("/hello", (req, res) => {
   res.send("Hello, World!");
 });
 
-// Serve static files from the "public" folder
-app.use(express.static("public"));
+app.use(bodyParser.json());
+app.use("/.netlify/functions/server", router); // path must route to lambda
+app.use("/", (req, res) => res.sendFile(path.join(__dirname, "../index.html")));
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+module.exports = app;
+module.exports.handler = serverless(app);
